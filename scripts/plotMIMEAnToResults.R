@@ -23,7 +23,7 @@ if(length(args) < 2) {
 The MIMEAnToDirectory contains the one or several MIMEAnTo result directories with output files.\n
 The reference file contains the reference sequence in a fasta file.\n
 The plots are saved in the resultDirectory.\n
-An optional fourth argument suffix can be given, if the MIMAnTo files were saved with a suffix. \n\n")
+An optional argument suffix can be given, if the MIMAnTo files were saved with a suffix. \n\n")
 
   #terminate without saving workspace
   quit("no")
