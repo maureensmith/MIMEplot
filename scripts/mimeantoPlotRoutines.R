@@ -1,5 +1,96 @@
 library(ggplot2)
 library(ggthemes)
+library(scales)
+#### general helper functions #######
+
+
+
+add_5UTR_region_new <- function(p, l=325, hlineSize=1.5) {
+  region = rep("other", l)
+  #region_polyA = region_SL2 = rep(NaN,length(positions))
+  region[1:51] = "TAR"
+  region[58:104] = "PolyA"
+  region[119:238] = "PBS"
+  region[243:277] = "SL1"
+  region[282:300] = "SL2"
+  region[312:325] = "SL3"
+  
+  regionStart=c(1,58,119,243,282,312)
+  regionEnd=c(51,104,238,277,300,325)
+  
+  regionOrder = c("TAR","PolyA","PBS", "SL1", "SL2", "SL3", "other")
+  defColors <- hue_pal(l=40)(length(regionOrder)-1)
+  colBlack <- "#000000"
+  
+  
+  p <- p +
+    annotate("rect", xmin=which(region=="TAR")[1], xmax=tail(which(region=="TAR"),n=1), ymin=-Inf, ymax=Inf, 
+             size=13, fill=defColors[1],alpha=0.1) +
+    annotate("rect", xmin=which(region=="PolyA")[1], xmax=tail(which(region=="PolyA"),n=1), ymin=-Inf, ymax=Inf, 
+             size=13, fill=defColors[2], alpha=0.1) +
+    annotate("rect", xmin=which(region=="PBS")[1], xmax=tail(which(region=="PBS"),n=1), ymin=-Inf, ymax=Inf, 
+             size=13, fill=defColors[3], alpha=0.1) +
+    annotate("rect", xmin=which(region=="SL1")[1], xmax=tail(which(region=="SL1"),n=1), ymin=-Inf, ymax=Inf,
+             size=13, fill=defColors[4], alpha=0.1) +
+    annotate("rect", xmin=which(region=="SL2")[1], xmax=tail(which(region=="SL2"),n=1), ymin=-Inf, ymax=Inf, 
+             size=13, fill=defColors[5], alpha=0.1) +
+    annotate("rect", xmin=which(region=="SL3")[1], xmax=tail(which(region=="SL3"),n=1), ymin=-Inf, ymax=Inf, 
+             size=13, fill=defColors[6], alpha=0.1) +
+    geom_hline(aes(yintercept=0), size=hlineSize)
+    #geom_hline(yintercept = 0)
+  #theme_minimal()
+  # theme(legend.position="top",legend.direction="vertical", legend.margin=margin(), legend.title = element_blank())
+  
+  return(p)
+}
+
+add_5UTR_region <- function(p, maxValue, nrows) {
+  library(scales)
+  #define important regions where signal is expected
+  region = rep("other", nrows)
+  #region_polyA = region_SL2 = rep(NaN,length(positions))
+  region[1:51] = "TAR"
+  region[58:104] = "PolyA"
+  region[119:238] = "PBS"
+  region[243:277] = "SL1"
+  region[282:300] = "SL2"
+  region[312:325] = "SL3"
+  
+  regionStart=c(1,58,119,243,282,312)
+  regionEnd=c(51,104,238,277,300,325)
+  
+  regionOrder = c("TAR","PolyA","PBS", "SL1", "SL2", "SL3", "other")
+  defColors <- hue_pal(l=40)(length(regionOrder)-1)
+  colBlack <- "#000000"
+  maxValue <- maxValue+maxValue*0.25
+  
+  p<-  p+ geom_segment(aes(x=which(region=="TAR")[1], xend=tail(which(region=="TAR"),n=1), y=maxValue, yend=maxValue), size=13, col=defColors[1]) +
+    geom_segment(aes(x=which(region=="PolyA")[1], xend=tail(which(region=="PolyA"),n=1), y=maxValue, yend=maxValue), size=13, col=defColors[2]) +
+    geom_segment(aes(x=which(region=="PBS")[1], xend=tail(which(region=="PBS"),n=1), y=maxValue, yend=maxValue), size=13, col=defColors[3]) +
+    geom_segment(aes(x=which(region=="SL1")[1], xend=tail(which(region=="SL1"),n=1), y=maxValue, yend=maxValue), size=13, col=defColors[4]) +
+    geom_segment(aes(x=which(region=="SL2")[1], xend=tail(which(region=="SL2"),n=1), y=maxValue, yend=maxValue), size=13, col=defColors[5]) +
+    geom_segment(aes(x=which(region=="SL3")[1], xend=tail(which(region=="SL3"),n=1), y=maxValue, yend=maxValue), size=13, col=defColors[6]) +
+    geom_text(aes(label="TAR", x=median(which(region=="TAR")), y= maxValue-maxValue*0.1), col=defColors[1])+
+    geom_text(aes(label="PolyA", x=median(which(region=="PolyA")), y= maxValue-maxValue*0.1), col=defColors[2])+
+    geom_text(aes(label="PBS", x=median(which(region=="PBS")), y= maxValue-maxValue*0.1), col=defColors[3])+
+    geom_text(aes(label="SL1", x=median(which(region=="SL1")), y= maxValue-maxValue*0.1), col=defColors[4])+
+    geom_text(aes(label="SL2", x=median(which(region=="SL2")), y= maxValue-maxValue*0.1), col=defColors[5])+
+    geom_text(aes(label="SL3", x=median(which(region=="SL3")), y= maxValue-maxValue*0.1), col=defColors[6])
+  
+  return(p)
+}
+
+make_plot_nice <- function(p, fontsize=12) {
+  
+  p <- p +theme_bw()+
+    theme(axis.text = element_text(size=fontsize),
+          axis.title = element_text(size=fontsize),
+          legend.text = element_text(size=fontsize),
+          legend.title = element_text(size=fontsize))
+  return(p)
+}
+
+#### long plots #######
 
 getLongPlot <- function(data.table, refSeq.df) {
   nucls=c("A", "C", "G", "T")
@@ -102,7 +193,7 @@ getLongPlot_severalSamples <- function(data.table, refSeq.df) {
   return(p)
 }
 
-getPlot <- function(data.table, withRegion=F) {
+getPlot <- function(data.table, withRegion=F, ls=1 ) {
   library(scales)
   #define important regions where signal is expected
   region = rep("other", nrow(data.table))
@@ -121,32 +212,63 @@ getPlot <- function(data.table, withRegion=F) {
   defColors <- hue_pal(l=40)(length(regionOrder)-1)
   colBlack <- "#000000"
   
-  
   maxMaxKd = max(log2(data.table$smoothedMedian), na.rm = T) + 1
+  maxPos = max(data.table$pos1[!is.na(data.table$smoothedMedian)])
   ### Max Kd
   p <- ggplot(data=data.table) +
     geom_hline(aes(yintercept=0), size=1)
   
   if(withRegion) {
-   p<-  p+ geom_segment(aes(x=which(region=="TAR")[1], xend=tail(which(region=="TAR"),n=1), y=maxMaxKd, yend=maxMaxKd), size=13, col=defColors[1]) +
-      geom_segment(aes(x=which(region=="PolyA")[1], xend=tail(which(region=="PolyA"),n=1), y=maxMaxKd, yend=maxMaxKd), size=13, col=defColors[2]) +
-      geom_segment(aes(x=which(region=="PBS")[1], xend=tail(which(region=="PBS"),n=1), y=maxMaxKd, yend=maxMaxKd), size=13, col=defColors[3]) +
-      geom_segment(aes(x=which(region=="SL1")[1], xend=tail(which(region=="SL1"),n=1), y=maxMaxKd, yend=maxMaxKd), size=13, col=defColors[4]) +
-      geom_segment(aes(x=which(region=="SL2")[1], xend=tail(which(region=="SL2"),n=1), y=maxMaxKd, yend=maxMaxKd), size=13, col=defColors[5]) +
-      geom_segment(aes(x=which(region=="SL3")[1], xend=tail(which(region=="SL3"),n=1), y=maxMaxKd, yend=maxMaxKd), size=13, col=defColors[6]) +
-      geom_text(aes(label="TAR", x=median(which(region=="TAR")), y= maxMaxKd-0.5), col=defColors[1])+
-      geom_text(aes(label="PolyA", x=median(which(region=="PolyA")), y= maxMaxKd-0.5), col=defColors[2])+
-      geom_text(aes(label="PBS", x=median(which(region=="PBS")), y= maxMaxKd-0.5), col=defColors[3])+
-      geom_text(aes(label="SL1", x=median(which(region=="SL1")), y= maxMaxKd-0.5), col=defColors[4])+
-      geom_text(aes(label="SL2", x=median(which(region=="SL2")), y= maxMaxKd-0.5), col=defColors[5])+
-      geom_text(aes(label="SL3", x=median(which(region=="SL3")), y= maxMaxKd-0.5), col=defColors[6])
+    p <- add_5UTR_region_new(p, nrow(data.table))
+  #  p<-  p+ geom_segment(aes(x=which(region=="TAR")[1], xend=tail(which(region=="TAR"),n=1), y=maxMaxKd, yend=maxMaxKd), size=13, col=defColors[1]) +
+  #     geom_segment(aes(x=which(region=="PolyA")[1], xend=tail(which(region=="PolyA"),n=1), y=maxMaxKd, yend=maxMaxKd), size=13, col=defColors[2]) +
+  #     geom_segment(aes(x=which(region=="PBS")[1], xend=tail(which(region=="PBS"),n=1), y=maxMaxKd, yend=maxMaxKd), size=13, col=defColors[3]) +
+  #     geom_segment(aes(x=which(region=="SL1")[1], xend=tail(which(region=="SL1"),n=1), y=maxMaxKd, yend=maxMaxKd), size=13, col=defColors[4]) +
+  #     geom_segment(aes(x=which(region=="SL2")[1], xend=tail(which(region=="SL2"),n=1), y=maxMaxKd, yend=maxMaxKd), size=13, col=defColors[5]) +
+  #     geom_segment(aes(x=which(region=="SL3")[1], xend=tail(which(region=="SL3"),n=1), y=maxMaxKd, yend=maxMaxKd), size=13, col=defColors[6]) +
+  #     geom_text(aes(label="TAR", x=median(which(region=="TAR")), y= maxMaxKd-0.5), col=defColors[1])+
+  #     geom_text(aes(label="PolyA", x=median(which(region=="PolyA")), y= maxMaxKd-0.5), col=defColors[2])+
+  #     geom_text(aes(label="PBS", x=median(which(region=="PBS")), y= maxMaxKd-0.5), col=defColors[3])+
+  #     geom_text(aes(label="SL1", x=median(which(region=="SL1")), y= maxMaxKd-0.5), col=defColors[4])+
+  #     geom_text(aes(label="SL2", x=median(which(region=="SL2")), y= maxMaxKd-0.5), col=defColors[5])+
+  #     geom_text(aes(label="SL3", x=median(which(region=="SL3")), y= maxMaxKd-0.5), col=defColors[6])
   }
   p<-p+geom_ribbon(aes(x=pos1, ymin=log2(smoothed5), ymax=log2(smoothed95), fill=comparison, group=comparison), alpha=0.3)+
-    geom_line(aes(x=pos1, y=log2(smoothedMedian), col=comparison), size=1, alpha=0.8)+
+    geom_line(aes(x=pos1, y=log2(smoothedMedian), col=comparison), size=ls, alpha=0.8)+
+    scale_x_continuous(minor_breaks=pretty_breaks(n=50), breaks=pretty_breaks(n=10)) +   
     ylab("rel. Kd (log2)") +
     xlab("Position") +
+    #coord_cartesian(ylim = c(-1.5, 2))+
     theme_bw()+
     theme(axis.text = element_text(size=14),
-          axis.title = element_text(size=14,face="bold"))
+          axis.title = element_text(size=14,face="bold"),
+          legend.position="bottom",legend.direction="horizontal", legend.margin=margin())
+    
   return(p)
 }
+
+getPlot_unsmoothed <- function(data.table, withRegion=F, ls=1 ) {
+  library(scales)
+  maxMaxKd = max(log2(data.table$medianKd), na.rm = T) + 1
+  maxPos = max(data.table$pos1[!is.na(data.table$medianKd)])
+  ### Max Kd
+  p <- ggplot(data=data.table) +
+    geom_hline(aes(yintercept=0), size=1)
+  
+  if(withRegion) {
+    p <- add_5UTR_region_new(p, nrow(data.table))
+  }
+  p<-p+geom_ribbon(aes(x=pos1, ymin=log2(medianKd_5), ymax=log2(medianKd_95), fill=comparison, group=comparison), alpha=0.3)+
+    geom_line(aes(x=pos1, y=log2(medianKd), col=comparison), size=ls, alpha=0.8)+
+    scale_x_continuous(minor_breaks=pretty_breaks(n=50), breaks=pretty_breaks(n=10)) +   
+    ylab("rel. Kd (log2)") +
+    xlab("Position") +
+    #coord_cartesian(ylim = c(-1.5, 2))+
+    theme_bw()+
+    theme(axis.text = element_text(size=14),
+          axis.title = element_text(size=14,face="bold"),
+          legend.position="bottom",legend.direction="horizontal", legend.margin=margin())
+  
+  return(p)
+}
+
